@@ -56,46 +56,30 @@ public:
 
 class SolutionMgr {
 public:
-    enum Rule {
-        exclude, 
-        include
-    };
+    enum Rule { exclude,  include };
 
     SolutionMgr() {}
     SolutionMgr(Rule def) :m_defaultRule(def) {}
 
     void RunTest()
     {
-        if (m_defaultRule == include) {
-            for (auto& i : SolutionMap) {
-                if(m_excludeRule.find(i.first) == m_excludeRule.end())
-                    i.second->test();
-            }
-        }
-        else {
-            for (auto& i : SolutionMap) {
-                if (m_excludeRule.find(i.first) != m_excludeRule.end())
-                    continue;
+        for (auto& i : SolutionMap) {
+            if (m_excludeRule.find(i.first) != m_excludeRule.end())
+                continue;
+            if (m_defaultRule == exclude && m_includeRule.find(i.first) == m_includeRule.end())
+                continue;
 
-                if (m_includeRule.find(i.first) != m_includeRule.end())
-                    i.second->test();
-            }
+            i.second->test();
         }
     }
 
     void setDefaultRule(Rule def) { m_defaultRule = def; };
 
     template<typename... Args>
-    void setIncludeRule(Args&&... args)
-    {
-        (m_includeRule.insert(args), ...);
-    }
+    void setIncludeRule(Args&&... args) { (m_includeRule.insert(args), ...); }
 
     template<typename... Args>
-    void setExcludeRule(Args&&... args)
-    {
-        (m_excludeRule.insert(args), ...);
-    }
+    void setExcludeRule(Args&&... args) { (m_excludeRule.insert(args), ...); }
 
     static inline map<string, unique_ptr<ISolutionTest>> SolutionMap;
 
@@ -144,7 +128,7 @@ struct isSameType : std::is_same<typename std::decay<T>::type, typename std::dec
 template<class T, size_t N>
 class paramList {};
 
-template<class T, size_t N = T::ParamSize>
+template<class T, class TC>
 class SolutionTestImpl : public ISolutionTest
 {
 public:
@@ -172,25 +156,39 @@ public:
         }
     }
 
+    template<typename F, size_t ...i, typename T>
+    void callFuncHelper(F f, index_sequence<i...>, T&& t) {
+        f(std::get<i>(t)...);
+    }
+
+    template<typename F, typename... T>
+    void callFunc(F f, const std::tuple<T...>& t) {
+        callFuncHelper(f, make_index_sequence<sizeof...(T)>(), t);
+    }
+
     size_t testSolution() {
 
-        static_assert(N>=1&& N<=3, "Not Support More Param!!");
-
-        for (size_t i = 0; i < m_param.m_param1.size(); i++) {
-            if constexpr (N == 1) {
-                auto ret = m_solution.test(m_param.m_param1[i]);
-                if (ret != m_param.m_result[i]) { return i; }
-            }
-            else if constexpr (N == 2) {
-                auto ret = m_solution.test(m_param.m_param1[i], m_param.m_param2[i]);
-                if (ret != m_param.m_result[i]) { return i; }
-            }
-            else if constexpr (N == 3) {
-                auto ret = m_solution.test(m_param.m_param1[i], m_param.m_param2[i], m_param.m_param3[i]);
-                if (ret != m_param.m_result[i]) { return i; }
-            }
-
+        for (auto& i : TC::instance().m_cases)
+        {
+            callFunc(test, inp);
         }
+        //static_assert(N>=1&& N<=3, "Not Support More Param!!");
+
+        //for (size_t i = 0; i < m_param.m_param1.size(); i++) {
+        //    if constexpr (N == 1) {
+        //        auto ret = m_solution.test(m_param.m_param1[i]);
+        //        if (ret != m_param.m_result[i]) { return i; }
+        //    }
+        //    else if constexpr (N == 2) {
+        //        auto ret = m_solution.test(m_param.m_param1[i], m_param.m_param2[i]);
+        //        if (ret != m_param.m_result[i]) { return i; }
+        //    }
+        //    else if constexpr (N == 3) {
+        //        auto ret = m_solution.test(m_param.m_param1[i], m_param.m_param2[i], m_param.m_param3[i]);
+        //        if (ret != m_param.m_result[i]) { return i; }
+        //    }
+
+        //}
         return m_param.m_result.size();
     }
 

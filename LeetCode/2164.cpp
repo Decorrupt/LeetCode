@@ -2,10 +2,39 @@
 #include "pch.h"
 #include "solution.h"
 
+class SolutionCase2164
+{
+public:
+    using type = std::tuple<vector<int>, vector<int>>;
+    using T = type;
+
+    static SolutionCase2164& instance() {
+        static SolutionCase2164 inst;
+        return inst;
+    }
+
+    template<class T, typename... Args>
+    auto test(T& sln, Args&&... args) 
+    { 
+        return sln->sortEvenOdd(std::forward<Args>(args)...);
+    }
+
+    std::vector<T> m_cases;
+};
+
+class SolutionCase2164Registry
+{
+    SolutionCase2164Registry()
+    {
+        SolutionCase2164::instance().m_cases.push_back(
+            SolutionCase2164::T({2, 3, 4, 1}, { 4, 1, 2, 3 })
+        );
+    }
+};
+
 /* 空间复杂度极差，在忘了排序算法情况下备用 */
 class Solution2164_1
 {
-    DEFINE_PARAM1_TYPE(sortEvenOdd, vector<int>, vector<int>)
 public:
 
     vector<int> sortEvenOdd(vector<int>& nums)
