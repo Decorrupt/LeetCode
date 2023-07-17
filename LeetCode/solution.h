@@ -41,7 +41,7 @@ class registerSolution##serial { public:    \
         auto ptr = std::make_unique<SolutionTestImpl<Solution##serial>>(#serial);
 
 #define DEFINE_SOLUTION_TEST_END(serial)\
-        SolutionMgr::SolutionMap.insert({ "Solution" #serial ,std::move(ptr)});\
+        SolutionMgr::SolutionMap.insert({ #serial ,std::move(ptr)});\
     }};\
     registerSolution##serial registrySolution##serial##Instance;
 
@@ -73,32 +73,68 @@ public:
             }
         }
         else {
-            for (auto& i : m_includeRule) {
-                if (m_excludeRule.find(i) == m_excludeRule.end()) {
-                    auto it = SolutionMap.find(i);
-                    if (it != SolutionMap.end())
-                        it->second->test();
-                }
+            for (auto& i : SolutionMap) {
+                if (m_excludeRule.find(i.first) != m_excludeRule.end())
+                    continue;
+
+                if (m_includeRule.find(i.first) != m_includeRule.end())
+                    i.second->test();
             }
         }
     }
 
     void setDefaultRule(Rule def) { m_defaultRule = def; };
 
-    template<Rule rule, typename... Args>
-    void setRule(Args&&... args)
+    template<typename... Args>
+    void setIncludeRule(Args&&... args)
     {
-        if constexpr (rule == include)
-            (m_includeRule.insert(args), ...);
-        else
-            (m_excludeRule.insert(args), ...);
+        (m_includeRule.insert(args), ...);
+    }
+
+    template<typename... Args>
+    void setExcludeRule(Args&&... args)
+    {
+        (m_excludeRule.insert(args), ...);
     }
 
     static inline map<string, unique_ptr<ISolutionTest>> SolutionMap;
 
 private:
-    set<string> m_includeRule;
-    set<string> m_excludeRule;
+
+    class serialStr : public string
+    {
+    public:
+        serialStr() :string() {}
+        serialStr(size_t n) :string(to_string(n)),m_isPureNum(true), m_serial(n) {}
+        serialStr(const char* s) :string(s), m_isPureNum(getNumCharSize(s) == strlen(s)), m_serial(atoi(s)) {}
+        serialStr(const string& s) :string(s), m_isPureNum(getNumCharSize(s.c_str()) == s.size()), m_serial(atoi(s.c_str())) {}
+        serialStr(const serialStr& s) :string(s), m_isPureNum(s.m_isPureNum), m_serial(s.m_serial) {}
+
+        static size_t getNumCharSize(const char* str) 
+        {
+            size_t num = 0;
+            while (0 <= str[num] && str[num] <= 9) num++;
+            return num;
+        };
+
+        bool operator<(const serialStr& other) const
+        {
+            if(m_serial == other.m_serial){
+                if (m_isPureNum && other.m_isPureNum) 
+                    return false;
+
+                size_t size = min(this->size(), other.size());
+                return strncmp(this->c_str(), other.c_str(), size) < 0;
+            }
+
+            return m_serial < other.m_serial;
+        }
+        bool m_isPureNum = 0;
+        size_t m_serial = 0;
+    };
+
+    set<serialStr> m_includeRule;
+    set<serialStr> m_excludeRule;
     Rule m_defaultRule = include;
 };
 

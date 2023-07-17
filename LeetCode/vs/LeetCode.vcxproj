@@ -26,9 +26,6 @@
     <ClInclude Include="..\pch.h" />
     <ClInclude Include="..\solution.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
