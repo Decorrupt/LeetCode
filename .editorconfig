@@ -1,0 +1,6 @@
+root = true  # 所在目录是项目根目录，此目录及子目录下保存的文件都会生效    
+ 
+[*]  # 对于所有文件
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8

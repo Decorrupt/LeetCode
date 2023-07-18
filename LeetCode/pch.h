@@ -8,9 +8,12 @@
 #include <chrono>
 #include <assert.h>
 
-#include <vector>
 #include <map>
 #include <set>
+#include <list>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "solution.h"
 using namespace std;
