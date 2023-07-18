@@ -1,53 +1,5 @@
 #pragma once
 
-#include "pch.h"
-
-enum ParamType {
-    ResultType = 0,
-    Param1Type,
-    Param2Type,
-    Param3Type
-};
-
-#define DEFINE_KEY_FUNC(func) \
-public:\
-    template<typename... Args>\
-    auto test(Args&&... args) { return func(std::forward<Args>(args)...); }
-
-#define DEFINE_PARAM1_TYPE(func, resultType, param1Type) \
-    DEFINE_KEY_FUNC(func)   \
-    static constexpr size_t ParamSize = 1;\
-    using result = resultType;\
-    using param1 = param1Type;
-
-#define DEFINE_PARAM2_TYPE(func, resultType, param1Type, param2Type) \
-    DEFINE_KEY_FUNC(func)   \
-    static constexpr size_t ParamSize = 2;\
-    using result = resultType;\
-    using param1 = param1Type;\
-    using param2 = param2Type;
-
-#define DEFINE_PARAM3_TYPE(func, resultType, param1Type, param2Type, param3Type) \
-    DEFINE_KEY_FUNC(func)   \
-    static constexpr size_t ParamSize = 3;\
-    using result = resultType;\
-    using param1 = param1Type;\
-    using param2 = param2Type;\
-    using param3 = param3Type;
-
-#define DEFINE_SOLUTION_TEST_BEGIN(serial)  \
-class registerSolution##serial { public:    \
-    registerSolution##serial() { \
-        auto ptr = std::make_unique<SolutionTestImpl<Solution##serial>>(#serial);
-
-#define DEFINE_SOLUTION_TEST_END(serial)\
-        SolutionMgr::SolutionMap.insert({ #serial ,std::move(ptr)});\
-    }};\
-    registerSolution##serial registrySolution##serial##Instance;
-
-#define REGISTRY_SOLUTION_TEST_PARAM(type, ...)\
-    ptr->setParamList<type>(__VA_ARGS__);
-
 class ISolutionTest
 {
 public:
@@ -81,18 +33,18 @@ public:
     template<typename... Args>
     void setExcludeRule(Args&&... args) { (m_excludeRule.insert(args), ...); }
 
-    static inline map<string, unique_ptr<ISolutionTest>> SolutionMap;
+    static inline std::map<std::string, std::unique_ptr<ISolutionTest>> SolutionMap;
 
 private:
 
-    class serialStr : public string
+    class serialStr : public std::string
     {
     public:
-        serialStr() :string() {}
-        serialStr(size_t n) :string(to_string(n)),m_isPureNum(true), m_serial(n) {}
-        serialStr(const char* s) :string(s), m_isPureNum(getNumCharSize(s) == strlen(s)), m_serial(atoi(s)) {}
-        serialStr(const string& s) :string(s), m_isPureNum(getNumCharSize(s.c_str()) == s.size()), m_serial(atoi(s.c_str())) {}
-        serialStr(const serialStr& s) :string(s), m_isPureNum(s.m_isPureNum), m_serial(s.m_serial) {}
+        serialStr() :std::string() {}
+        serialStr(size_t n) :std::string(std::to_string(n)),m_isPureNum(true), m_serial(n) {}
+        serialStr(const char* s) :std::string(s), m_isPureNum(getNumCharSize(s) == strlen(s)), m_serial(atoi(s)) {}
+        serialStr(const std::string& s) :std::string(s), m_isPureNum(getNumCharSize(s.c_str()) == s.size()), m_serial(atoi(s.c_str())) {}
+        serialStr(const serialStr& s) :std::string(s), m_isPureNum(s.m_isPureNum), m_serial(s.m_serial) {}
 
         static size_t getNumCharSize(const char* str) 
         {
@@ -107,7 +59,7 @@ private:
                 if (m_isPureNum && other.m_isPureNum) 
                     return false;
 
-                size_t size = min(this->size(), other.size());
+                size_t size = std::min(this->size(), other.size());
                 return strncmp(this->c_str(), other.c_str(), size) < 0;
             }
 
@@ -117,37 +69,70 @@ private:
         size_t m_serial = 0;
     };
 
-    set<serialStr> m_includeRule;
-    set<serialStr> m_excludeRule;
+    std::set<serialStr> m_includeRule;
+    std::set<serialStr> m_excludeRule;
     Rule m_defaultRule = include;
 };
 
-template <typename T, typename U>
-struct isSameType : std::is_same<typename std::decay<T>::type, typename std::decay<U>::type>::type {};
+/* SolutionCase 因为转发函数需要使用字面值，所以无法完全使用模板抽象 */
+#define DEFINE_SOLUTION_CASE(serial, keyFunc, ...)\
+class SolutionCase##serial { public:\
+    using type = std::tuple<__VA_ARGS__>; \
+    static SolutionCase##serial& instance() { \
+        static SolutionCase##serial inst; \
+        return inst; \
+    } \
+    void registerCases();\
+    template<typename... Args> \
+    void setCases(Args&&... args) { (m_cases.push_back((type)args), ...); } \
+    template<class Solution, class Case> \
+    auto test(Solution& sln, Case&& cas) { \
+        return run(sln, std::forward<Case>(cas), std::make_index_sequence<std::tuple_size<type>::value - 1>()); \
+    } \
+    template<class Solution, class Case, size_t ...i> \
+    auto run(Solution& sln, Case&& cas, std::index_sequence<i...>) { \
+        return sln.keyFunc(std::get<i + 1>(cas)...); \
+    } \
+    std::vector<type> m_cases;\
+};\
+using Case = SolutionCase##serial::type;
 
-template<class T, size_t N>
-class paramList {};
+#define REGISTER_SOLUTION_CASE(serial, ...)\
+void SolutionCase##serial::registerCases() { setCases(__VA_ARGS__); } \
+static SolutionCaseRegistry<SolutionCase##serial> solutionCaseRegistry##serial;
+
+#define SOLUTION_CLASS(serial, subSerial)\
+Solution##serial##_##subSerial; \
+class SolutionRegistry##serial##_##subSerial{ public: \
+    SolutionRegistry##serial##_##subSerial(){ \
+        const char* serialStr = #serial "_" #subSerial; \
+        SolutionMgr::SolutionMap[serialStr] = make_unique<SolutionTestImpl<Solution##serial##_##subSerial, SolutionCase##serial>>(serialStr);\
+    }\
+};\
+static SolutionRegistry##serial##_##subSerial solutionRegistry##serial##_##subSerial; \
+class Solution##serial##_##subSerial
 
 template<class T, class TC>
 class SolutionTestImpl : public ISolutionTest
 {
 public:
-    SolutionTestImpl(const string& serial) :m_serial(serial) {}
+    SolutionTestImpl(const char* serial) :m_serial(serial) {}
 
     virtual bool test()
     {
-        auto tp1 = chrono::steady_clock::now();
+        auto caseCnt = TC::instance().m_cases.size();
+        auto tp1 = std::chrono::steady_clock::now();
 
         size_t ret = testSolution();
 
-        auto time = chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now() - tp1).count();
+        auto time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - tp1).count();
 
-        if (ret != m_param.m_result.size()) {
+        if (ret != caseCnt) {
             std::cout << "\nQustion[" << m_serial << "] Test Case[" << ret + 1 << "]Fail!\n" << std::endl;
         }
 
         std::cout << "Qustion[" << m_serial << "] Test " << (ret ? "OK" : "Fail") << "! Test [" << ret << "] cases, Use [" << time << "] us" << std::endl;
-        if (ret != m_param.m_result.size()) {
+        if (ret != caseCnt) {
             assert(false);
             return false;
         }
@@ -156,101 +141,32 @@ public:
         }
     }
 
-    template<typename F, size_t ...i, typename T>
-    void callFuncHelper(F f, index_sequence<i...>, T&& t) {
-        f(std::get<i>(t)...);
-    }
-
-    template<typename F, typename... T>
-    void callFunc(F f, const std::tuple<T...>& t) {
-        callFuncHelper(f, make_index_sequence<sizeof...(T)>(), t);
-    }
-
     size_t testSolution() {
-
-        for (auto& i : TC::instance().m_cases)
-        {
-            callFunc(test, inp);
+        if (!m_solutionPtr) m_solutionPtr = std::make_unique<T>();
+        size_t i = 0;
+        for (; i < TC::instance().m_cases.size(); i++) {
+            auto ret = TC::instance().test(*m_solutionPtr, TC::instance().m_cases[i]);
+            if (std::get<0>(TC::instance().m_cases[i]) != ret) {
+                break;
+            }
         }
-        //static_assert(N>=1&& N<=3, "Not Support More Param!!");
-
-        //for (size_t i = 0; i < m_param.m_param1.size(); i++) {
-        //    if constexpr (N == 1) {
-        //        auto ret = m_solution.test(m_param.m_param1[i]);
-        //        if (ret != m_param.m_result[i]) { return i; }
-        //    }
-        //    else if constexpr (N == 2) {
-        //        auto ret = m_solution.test(m_param.m_param1[i], m_param.m_param2[i]);
-        //        if (ret != m_param.m_result[i]) { return i; }
-        //    }
-        //    else if constexpr (N == 3) {
-        //        auto ret = m_solution.test(m_param.m_param1[i], m_param.m_param2[i], m_param.m_param3[i]);
-        //        if (ret != m_param.m_result[i]) { return i; }
-        //    }
-
-        //}
-        return m_param.m_result.size();
-    }
-
-    template<size_t Type, typename... Args>
-    void setParamList(Args&&... args)
-    {
-        if constexpr (Type == ResultType) {
-            (m_param.m_result.push_back((typename T::result)args), ...);
-        }
-        else if constexpr (Type == Param1Type) {
-            (m_param.m_param1.push_back((typename T::param1)args), ...);
-        }
-        else if constexpr (Type == Param2Type) {
-            (m_param.m_param2.push_back((typename T::param1)args), ...);
-        }
-        else if constexpr (Type == Param3Type) {
-            (m_param.m_param3.push_back((typename T::param1)args), ...);
-        }
+        return i;
     }
 
 private:
-    string m_serial;
-    T m_solution;
-    paramList<T, N> m_param;
+    std::string m_serial;
+    std::unique_ptr<T> m_solutionPtr;
 };
 
-template<class T>
-class paramList<T, 1>
+template<class TC>
+class SolutionCaseRegistry
 {
 public:
-    using result = T::result;
-    using param1 = T::param1;
-
-    std::vector<param1> m_param1;
-    std::vector<result> m_result;
+    SolutionCaseRegistry()
+    {
+        TC::instance().registerCases();
+    }
 };
 
-template<class T>
-class paramList<T, 2>
-{
-public:
-    using result = T::result;
-    using param1 = T::param1;
-    using param2 = T::param2;
-
-    std::vector<param1> m_param1;
-    std::vector<param2> m_param2;
-    std::vector<result> m_result;
-};
-
-template<class T>
-class paramList<T, 3>
-{
-public:
-    using result = T::result;
-    using param1 = T::param1;
-    using param2 = T::param2;
-    using param3 = T::param3;
-
-
-    std::vector<param1> m_param1;
-    std::vector<param2> m_param2;
-    std::vector<param3> m_param3;
-    std::vector<result> m_result;
-};
+template <typename T, typename U>
+struct isSameType : std::is_same<typename std::decay<T>::type, typename std::decay<U>::type>::type {};

@@ -1,42 +1,16 @@
 #pragma once
 #include "pch.h"
-#include "solution.h"
 
-class SolutionCase2164
-{
-public:
-    using type = std::tuple<vector<int>, vector<int>>;
-    using T = type;
-
-    static SolutionCase2164& instance() {
-        static SolutionCase2164 inst;
-        return inst;
-    }
-
-    template<class T, typename... Args>
-    auto test(T& sln, Args&&... args) 
-    { 
-        return sln->sortEvenOdd(std::forward<Args>(args)...);
-    }
-
-    std::vector<T> m_cases;
-};
-
-class SolutionCase2164Registry
-{
-    SolutionCase2164Registry()
-    {
-        SolutionCase2164::instance().m_cases.push_back(
-            SolutionCase2164::T({2, 3, 4, 1}, { 4, 1, 2, 3 })
-        );
-    }
-};
+DEFINE_SOLUTION_CASE(2164, sortEvenOdd, vector<int>, vector<int>);
+REGISTER_SOLUTION_CASE(2164,
+    Case({ 2, 3, 4, 1 }, { 4, 1, 2, 3 }),
+    Case({ 2, 1 }, { 2, 1 })
+);
 
 /* 空间复杂度极差，在忘了排序算法情况下备用 */
-class Solution2164_1
+class SOLUTION_CLASS(2164, 1)
 {
 public:
-
     vector<int> sortEvenOdd(vector<int>& nums)
     {
         /* int数组还是int*数组的空间复杂度相同 */
@@ -70,7 +44,48 @@ public:
     }
 };
 
-DEFINE_SOLUTION_TEST_BEGIN(2164_1)
-REGISTRY_SOLUTION_TEST_PARAM(ResultType, vector<int>{2, 3, 4, 1 }, vector<int>{ 2, 1 });
-REGISTRY_SOLUTION_TEST_PARAM(Param1Type, vector<int>{4, 1, 2, 3 }, vector<int>{ 2, 1 });
-DEFINE_SOLUTION_TEST_END(2164_1)
+
+//
+//class SolutionCase2164
+//{
+//public:
+//    using type = std::tuple<std::vector<int>, std::vector<int>>;
+//
+//    static SolutionCase2164& instance() {
+//        static SolutionCase2164 inst;
+//        return inst;
+//    }
+//
+//    void registerCases();
+//
+//    template<typename... Args>
+//    void setCases(Args&&... args) { (m_cases.push_back((type)args), ...); }
+//
+//    template<class Solution, class Case>
+//    auto test(Solution& sln, Case&& cas) {
+//        return run(sln, std::forward<Case>(cas), std::make_index_sequence<std::tuple_size<type>::value - 1>());
+//    }
+//
+//    template<class Solution, class Case, size_t ...i>
+//    auto run(Solution& sln, Case&& cas, std::index_sequence<i...>) {
+//        return sln.sortEvenOdd(std::get<i + 1>(cas)...);
+//    }
+//
+//    std::vector<type> m_cases;
+//};
+//using Case = SolutionCase2164::type;
+//
+//void SolutionCase2164::registerCases()
+//{
+//    setCases(Case({ 2, 3, 4, 1 }, { 4, 1, 2, 3 }), Case({ 2, 1 }, { 2, 1 }));
+//}
+//
+//
+//static SolutionCaseRegistry<SolutionCase2164> registry;
+//
+//template<class T>
+//class solutionRegistry
+//{
+//public:
+//    solutionRegistry() { T::registerSolution(); }
+//};
