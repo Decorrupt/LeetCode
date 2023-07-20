@@ -41,32 +41,30 @@ private:
     {
     public:
         serialStr() :std::string() {}
-        serialStr(size_t n) :std::string(std::to_string(n)),m_isPureNum(true), m_serial(n) {}
-        serialStr(const char* s) :std::string(s), m_isPureNum(getNumCharSize(s) == strlen(s)), m_serial(atoi(s)) {}
-        serialStr(const std::string& s) :std::string(s), m_isPureNum(getNumCharSize(s.c_str()) == s.size()), m_serial(atoi(s.c_str())) {}
-        serialStr(const serialStr& s) :std::string(s), m_isPureNum(s.m_isPureNum), m_serial(s.m_serial) {}
+        serialStr(size_t n) :std::string(std::to_string(n)), m_serial{ std::to_string(n) } {}
+        serialStr(const char* s) :std::string(s) { getSerial(s); }
+        serialStr(const std::string& s) :std::string(s) { getSerial(s); }
+        serialStr(const serialStr& s) :std::string(s), m_serial(s.m_serial) {}
 
-        static size_t getNumCharSize(const char* str) 
+        void getSerial(const std::string& s)
         {
-            size_t num = 0;
-            while (0 <= str[num] && str[num] <= 9) num++;
-            return num;
-        };
+            std::istringstream ss(s);
+            std::string buf;
+            while (getline(ss, buf, '_')) m_serial.push_back(buf);
+        }
 
         bool operator<(const serialStr& other) const
         {
-            if(m_serial == other.m_serial){
-                if (m_isPureNum && other.m_isPureNum) 
-                    return false;
+            auto size = std::min(m_serial.size(), other.m_serial.size());
 
-                size_t size = std::min(this->size(), other.size());
-                return strncmp(this->c_str(), other.c_str(), size) < 0;
+            for (size_t i = 0; i < size; i++) {
+                if (m_serial[i] != other.m_serial[i])
+                    return m_serial[i] < other.m_serial[i];
             }
 
-            return m_serial < other.m_serial;
+            return false;
         }
-        bool m_isPureNum = 0;
-        size_t m_serial = 0;
+        std::vector<std::string> m_serial;
     };
 
     std::set<serialStr> m_includeRule;
@@ -101,7 +99,7 @@ using Case = SolutionCase##serial::type;
 void SolutionCase##serial::registerCases() { setCases(__VA_ARGS__); } \
 static SolutionCaseRegistry<SolutionCase##serial> solutionCaseRegistry##serial;
 
-#define SOLUTION_CLASS(serial, subSerial)\
+#define Solution(serial, subSerial)\
 Solution##serial##_##subSerial; \
 class SolutionRegistry##serial##_##subSerial{ public: \
     SolutionRegistry##serial##_##subSerial(){ \

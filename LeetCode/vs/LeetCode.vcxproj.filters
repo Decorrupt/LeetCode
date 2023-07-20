@@ -9,6 +9,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="LeetCode面试题">
+      <UniqueIdentifier>{9c9ab747-8756-4887-a78a-13ecf1368445}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\pch.h" />
@@ -21,6 +24,9 @@
     </ClCompile>
     <ClCompile Include="..\2006.cpp">
       <Filter>LeetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LeetCode面试\05.01.cpp">
+      <Filter>LeetCode面试题</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

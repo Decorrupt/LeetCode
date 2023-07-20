@@ -24,7 +24,7 @@ REGISTER_SOLUTION_CASE(2006,
  */
 
 /* O(n^2) */
-class SOLUTION_CLASS(2006, 1) {
+class Solution(2006, 1) {
 public:
     int countKDifference(vector<int>&nums, int k) {
         size_t i = 0;
@@ -42,7 +42,7 @@ public:
 };
 
 /* O(n) */
-class SOLUTION_CLASS(2006, 2) {
+class Solution(2006, 2) {
 public:
     int countKDifference(vector<int>&nums, int k) {
         int ret = 0;

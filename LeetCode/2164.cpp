@@ -7,7 +7,7 @@ REGISTER_SOLUTION_CASE(2164,
 );
 
 /* 空间复杂度极差，在忘了排序算法情况下备用 */
-class SOLUTION_CLASS(2164, 1)
+class Solution(2164, 1)
 {
 public:
     vector<int> sortEvenOdd(vector<int>& nums)

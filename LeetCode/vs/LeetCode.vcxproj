@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\2006.cpp" />
     <ClCompile Include="..\2164.cpp" />
+    <ClCompile Include="..\LeetCode面试\05.01.cpp" />
     <ClCompile Include="..\main.cpp" />
   </ItemGroup>
   <ItemGroup>
