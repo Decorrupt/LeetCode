@@ -1,15 +1,15 @@
 #include "pch.h"
 /*
-给你一个整数数组 nums 和一个整数 k ，请你返回数对 (i, j) 的数目，满足 i < j 且 |nums[i] - nums[j]| == k 。
+����һ���������� nums ��һ������ k �����㷵������ (i, j) ����Ŀ������ i < j �� |nums[i] - nums[j]| == k ��
 
-|x| 的值定义为：
+|x| ��ֵ����Ϊ��
 
-如果 x >= 0 ，那么值为 x 。
-如果 x < 0 ，那么值为 -x 。
+��� x >= 0 ����ôֵΪ x ��
+��� x < 0 ����ôֵΪ -x ��
 
-来源：力扣（LeetCode）
-链接：https://leetcode.cn/problems/count-number-of-pairs-with-absolute-difference-k
-著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
+��Դ�����ۣ�LeetCode��
+���ӣ�https://leetcode.cn/problems/count-number-of-pairs-with-absolute-difference-k
+����Ȩ������������С���ҵת������ϵ�ٷ���Ȩ������ҵת����ע��������
 */
 
 DEFINE_SOLUTION_CASE(2006, countKDifference, int, vector<int>, int);
@@ -20,7 +20,7 @@ REGISTER_SOLUTION_CASE(2006,
 );
 
 /*
- * 本题优化思路在于如何利用好 i<j 这一条件从而转为线性计算
+ * �����Ż�˼·����������ú� i<j ��һ�����Ӷ�תΪ���Լ���
  */
 
 /* O(n^2) */
