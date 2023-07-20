@@ -28,5 +28,8 @@
     <ClCompile Include="..\LeetCode面试\05.01.cpp">
       <Filter>LeetCode面试题</Filter>
     </ClCompile>
+    <ClCompile Include="..\2000.cpp">
+      <Filter>LeetCode</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
