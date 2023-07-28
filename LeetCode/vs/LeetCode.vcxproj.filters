@@ -31,5 +31,11 @@
     <ClCompile Include="..\2000.cpp">
       <Filter>LeetCode</Filter>
     </ClCompile>
+    <ClCompile Include="..\1105.cpp">
+      <Filter>LeetCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\393.cpp">
+      <Filter>LeetCode</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
