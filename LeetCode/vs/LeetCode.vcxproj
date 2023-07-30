@@ -23,6 +23,7 @@
     <ClCompile Include="..\1105.cpp" />
     <ClCompile Include="..\2006.cpp" />
     <ClCompile Include="..\2164.cpp" />
+    <ClCompile Include="..\2278.cpp" />
     <ClCompile Include="..\393.cpp" />
     <ClCompile Include="..\LeetCode面试\05.01.cpp" />
     <ClCompile Include="..\main.cpp" />
